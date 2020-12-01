@@ -1,0 +1,29 @@
+version: 1.0.5.{build}
+image: Visual Studio 2019
+configuration: Release
+dotnet_csproj:
+  patch: true
+  file: '**\*.csproj'
+  version: '{version}'
+  version_prefix: '{version}'
+  package_version: '{version}'
+  assembly_version: '{version}'
+  file_version: '{version}'
+  informational_version: '{version}'
+build_script:
+- cmd: dotnet pack src/Amazon.AspNetCore.Identity.Cognito/Amazon.AspNetCore.Identity.Cognito.csproj
+artifacts:
+- path: '**\*.nupkg'
+deploy:
+  - provider: NuGet
+    server: http://packages.smokeball.com/nuget/smokeball/
+    api_key:
+      secure: 4daht3RAVeO4D1y8kdMWmsaHx/kCMaBcrdNkmQeQWKk=
+    on:
+      branch: master
+  - provider: NuGet
+    server: http://packages.smokeball.com/nuget/smokeball/
+    api_key:
+      secure: 4daht3RAVeO4D1y8kdMWmsaHx/kCMaBcrdNkmQeQWKk=
+    on:
+      appveyor_repo_tag: true

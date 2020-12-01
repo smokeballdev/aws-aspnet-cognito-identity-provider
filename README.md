@@ -1,5 +1,7 @@
 ![.NET on AWS Banner](./logo.png ".NET on AWS")
 
+[![Build status](https://ci.appveyor.com/api/projects/status/42b3trnhiqq0x501?svg=true)](https://ci.appveyor.com/project/smokeballdev/aws-aspnet-cognito-identity-provider)
+
 ## ASP.NET Core Identity Provider for Amazon Cognito
 
 [![nuget](https://img.shields.io/nuget/v/Amazon.AspNetCore.Identity.Cognito.svg)](https://www.nuget.org/packages/Amazon.AspNetCore.Identity.Cognito/)
