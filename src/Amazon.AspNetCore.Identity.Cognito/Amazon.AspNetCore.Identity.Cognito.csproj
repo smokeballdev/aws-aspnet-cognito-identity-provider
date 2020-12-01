@@ -3,8 +3,8 @@
     <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
     <CodeAnalysisRuleSet>../ruleset.xml</CodeAnalysisRuleSet>
     <Version>1.0.5</Version>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageId>Amazon.AspNetCore.Identity.Cognito</PackageId>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageId>SB-Amazon.AspNetCore.Identity.Cognito</PackageId>
     <Title>ASP.NET Core Identity Provider for Amazon Cognito</Title>
     <Product>Amazon.AspNetCore.Identity.Cognito</Product>
     <Description>Simplifies using Amazon Cognito as a membership storage solution for building ASP.NET Core web applications using ASP.NET Core Identity.</Description>
