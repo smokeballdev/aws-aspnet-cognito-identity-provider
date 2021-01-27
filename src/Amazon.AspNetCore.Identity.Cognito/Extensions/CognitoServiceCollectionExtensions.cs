@@ -28,6 +28,12 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class CognitoServiceCollectionExtensions
     {
+        public static IServiceCollection ConfigureCognitoTokenOptions(this IServiceCollection services, Action<AWSCognitoTokenOptions> cognitoTokenOptions)
+        {
+            services.Configure(cognitoTokenOptions);
+            return services;
+        }
+
         public static IServiceCollection AddCognitoIdentity(this IServiceCollection services, Action<IdentityOptions> identityOptions = null, string prefix = null)
         {
             services.InjectCognitoUser<CognitoUser>(identityOptions);

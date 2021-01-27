@@ -13,9 +13,11 @@
  * permissions and limitations under the License.
  */
 
+using Amazon.AspNetCore.Identity.Cognito.Extensions;
 using Amazon.CognitoIdentityProvider;
 using Amazon.Extensions.CognitoAuthentication;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -29,12 +31,19 @@ namespace Amazon.AspNetCore.Identity.Cognito.Tests
     {
         private CognitoSignInManager<CognitoUser> signinManager;
         private Mock<CognitoUserManager<CognitoUser>> userManagerMock;
+        private Mock<IOptions<AWSCognitoTokenOptions>> cognitoTokenOptionsAccessorMock;
 
         public CognitoSigninManagerTests() : base()
         {
             userManagerMock = new Mock<CognitoUserManager<CognitoUser>>(userStoreMock.Object, null, null, null, null, null, null, null, null, contextAccessorMock.Object);
             claimsFactoryMock = new Mock<CognitoUserClaimsPrincipalFactory<CognitoUser>>(userManagerMock.Object, optionsAccessorMock.Object);
-            signinManager = new CognitoSignInManager<CognitoUser>(userManagerMock.Object, contextAccessorMock.Object, claimsFactoryMock.Object, optionsAccessorMock.Object, loggerSigninManagerMock.Object, schemesMock.Object);
+
+            cognitoTokenOptionsAccessorMock = new Mock<IOptions<AWSCognitoTokenOptions>>();
+            var cognitoTokenOptions = new AWSCognitoTokenOptions();
+            cognitoTokenOptions.AllowTokenRefresh = true;
+            cognitoTokenOptionsAccessorMock.Setup(o => o.Value).Returns(cognitoTokenOptions);
+
+            signinManager = new CognitoSignInManager<CognitoUser>(userManagerMock.Object, contextAccessorMock.Object, claimsFactoryMock.Object, optionsAccessorMock.Object, cognitoTokenOptionsAccessorMock.Object, loggerSigninManagerMock.Object, schemesMock.Object);
         }
 
         [Fact]

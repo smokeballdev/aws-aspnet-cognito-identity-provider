@@ -26,6 +26,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Amazon.AspNetCore.Identity.Cognito.Exceptions;
+using Amazon.AspNetCore.Identity.Cognito.Extensions;
 
 namespace Amazon.AspNetCore.Identity.Cognito
 {
@@ -34,6 +35,7 @@ namespace Amazon.AspNetCore.Identity.Cognito
         private readonly CognitoUserManager<TUser> _userManager;
         private readonly CognitoUserClaimsPrincipalFactory<TUser> _claimsFactory;
         private readonly IHttpContextAccessor _contextAccessor;
+        private readonly bool _allowTokenRefresh;
 
         private const string Cognito2FAAuthWorkflowKey = "Cognito2FAAuthWorkflowId";
         private const string ChallengeTypeKey = "ChallengeType";
@@ -44,6 +46,7 @@ namespace Amazon.AspNetCore.Identity.Cognito
         IHttpContextAccessor contextAccessor,
         IUserClaimsPrincipalFactory<TUser> claimsFactory,
         IOptions<IdentityOptions> optionsAccessor,
+        IOptions<AWSCognitoTokenOptions> cognitoTokenOptions,
         ILogger<SignInManager<TUser>> logger,
         IAuthenticationSchemeProvider schemes,
         IUserConfirmation<TUser> confirmation) : base(userManager, contextAccessor, claimsFactory, optionsAccessor, logger, schemes, confirmation)
@@ -65,6 +68,8 @@ namespace Amazon.AspNetCore.Identity.Cognito
                 throw new ArgumentException("The claimsFactory must be of type CognitoUserClaimsPrincipalFactory<TUser>", nameof(claimsFactory));
 
             _contextAccessor = contextAccessor ?? throw new ArgumentNullException(nameof(contextAccessor));
+
+            _allowTokenRefresh = cognitoTokenOptions.Value.AllowTokenRefresh;
         }
 #endif
 #if NETSTANDARD_2_0
@@ -72,6 +77,7 @@ namespace Amazon.AspNetCore.Identity.Cognito
         IHttpContextAccessor contextAccessor,
         IUserClaimsPrincipalFactory<TUser> claimsFactory,
         IOptions<IdentityOptions> optionsAccessor,
+        IOptions<AWSCognitoTokenOptions> cognitoTokenOptions,
         ILogger<SignInManager<TUser>> logger,
         IAuthenticationSchemeProvider schemes) : base(userManager, contextAccessor, claimsFactory, optionsAccessor, logger, schemes)
         {
@@ -92,6 +98,8 @@ namespace Amazon.AspNetCore.Identity.Cognito
                 throw new ArgumentException("The claimsFactory must be of type CognitoUserClaimsPrincipalFactory<TUser>", nameof(claimsFactory));
 
             _contextAccessor = contextAccessor ?? throw new ArgumentNullException(nameof(contextAccessor));
+
+            _allowTokenRefresh = cognitoTokenOptions.Value.AllowTokenRefresh;
         }
 #endif
 
@@ -182,24 +190,33 @@ namespace Amazon.AspNetCore.Identity.Cognito
         /// <param name="authenticationProperties">The authentication properties to update</param>
         private void AddUserTokensToAuthenticationProperties(TUser user, AuthenticationProperties authenticationProperties)
         {
-            authenticationProperties.StoreTokens(new List<AuthenticationToken>()
-            {
+            var tokens = new List<AuthenticationToken>();
+
+            tokens.Add(
                 new AuthenticationToken()
                 {
                     Name = OpenIdConnectParameterNames.AccessToken,
                     Value = user.SessionTokens?.AccessToken
-                },
-                new AuthenticationToken()
-                {
-                    Name = OpenIdConnectParameterNames.RefreshToken,
-                    Value = user.SessionTokens?.RefreshToken
-                },
+                });
+
+            if (_allowTokenRefresh)
+            {
+                tokens.Add(
+                    new AuthenticationToken()
+                    {
+                        Name = OpenIdConnectParameterNames.RefreshToken,
+                        Value = user.SessionTokens?.RefreshToken
+                    });
+            }
+
+            tokens.Add(
                 new AuthenticationToken()
                 {
                     Name = OpenIdConnectParameterNames.IdToken,
                     Value = user.SessionTokens?.IdToken
-                }
-            });
+                });
+
+            authenticationProperties.StoreTokens(tokens);
         }
 
         /// <summary>
