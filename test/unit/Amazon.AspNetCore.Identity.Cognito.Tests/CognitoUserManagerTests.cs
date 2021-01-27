@@ -58,8 +58,8 @@ namespace Amazon.AspNetCore.Identity.Cognito.Tests
         public async void Test_GivenAUser_WhenRespondToTwoFactorChallenge_ThenResponseIsNotAltered()
         {
             var authFlowResponse = new AuthFlowResponse("sessionId", null, null, null, null);
-            userStoreMock.Setup(mock => mock.RespondToTwoFactorChallengeAsync(It.IsAny<CognitoUser>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(authFlowResponse)).Verifiable();
-            var output = await userManager.RespondToTwoFactorChallengeAsync(GetCognitoUser(), "2FACODE", "SessionId").ConfigureAwait(false);
+            userStoreMock.Setup(mock => mock.RespondToTwoFactorChallengeAsync(It.IsAny<CognitoUser>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(authFlowResponse)).Verifiable();
+            var output = await userManager.RespondToTwoFactorChallengeAsync(GetCognitoUser(), "2FACODE", "AuthWorkflowId", "SessionId").ConfigureAwait(false);
             Assert.Equal(authFlowResponse, output);
             userStoreMock.Verify();
         }
@@ -249,7 +249,7 @@ namespace Amazon.AspNetCore.Identity.Cognito.Tests
         [Fact]
         public async void Test_GivenANullUser_WhenRespondToTwoFactorChallenge_ThenThrowsArgumentNullException()
         {
-            await Assert.ThrowsAsync<ArgumentNullException>(() => userManager.RespondToTwoFactorChallengeAsync(null, "2FACODE", "SessionId")).ConfigureAwait(false);
+            await Assert.ThrowsAsync<ArgumentNullException>(() => userManager.RespondToTwoFactorChallengeAsync(null, "2FACODE", "AuthWorkflowId", "SessionId")).ConfigureAwait(false);
         }
 
         [Fact]

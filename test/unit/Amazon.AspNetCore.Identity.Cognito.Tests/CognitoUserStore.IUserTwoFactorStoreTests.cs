@@ -32,7 +32,9 @@ namespace Amazon.AspNetCore.Identity.Cognito.Tests
                 MFAOptions = new List<MFAOptionType>()
                 {
                     new MFAOptionType()
-                }
+                },
+                PreferredMfaSetting = "Setting1",
+                UserMFASettingList = new List<string> { "Setting1 "}
             };
             _cognitoClientMock.Setup(mock => mock.AdminGetUserAsync(It.IsAny<AdminGetUserRequest>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(response)).Verifiable();
             var output = await _store.GetTwoFactorEnabledAsync(_userMock.Object, CancellationToken.None).ConfigureAwait(false);
@@ -54,9 +56,9 @@ namespace Amazon.AspNetCore.Identity.Cognito.Tests
         }
 
         [Fact]
-        public async void Test_GivenAUser_WhenSetTwoFactorEnabled_ThenAdminSetUserSettingsAsyncIsCalled()
+        public async void Test_GivenAUser_WhenSetTwoFactorEnabled_ThenAdminSetUserMFAPreferenceAsyncIsCalled()
         {
-            _cognitoClientMock.Setup(mock => mock.AdminSetUserSettingsAsync(It.IsAny<AdminSetUserSettingsRequest>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(new AdminSetUserSettingsResponse())).Verifiable();
+            _cognitoClientMock.Setup(mock => mock.AdminSetUserMFAPreferenceAsync(It.IsAny<AdminSetUserMFAPreferenceRequest>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(new AdminSetUserMFAPreferenceResponse())).Verifiable();
             await _store.SetTwoFactorEnabledAsync(_userMock.Object, false, CancellationToken.None).ConfigureAwait(false);
             _cognitoClientMock.Verify();
         }
