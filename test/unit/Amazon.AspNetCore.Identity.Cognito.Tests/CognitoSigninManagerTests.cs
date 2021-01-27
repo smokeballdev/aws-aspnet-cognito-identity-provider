@@ -13,9 +13,11 @@
  * permissions and limitations under the License.
  */
 
+using Amazon.AspNetCore.Identity.Cognito.Extensions;
 using Amazon.CognitoIdentityProvider;
 using Amazon.Extensions.CognitoAuthentication;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -29,12 +31,19 @@ namespace Amazon.AspNetCore.Identity.Cognito.Tests
     {
         private CognitoSignInManager<CognitoUser> signinManager;
         private Mock<CognitoUserManager<CognitoUser>> userManagerMock;
+        private Mock<IOptions<AWSCognitoTokenOptions>> cognitoTokenOptionsAccessorMock;
 
         public CognitoSigninManagerTests() : base()
         {
             userManagerMock = new Mock<CognitoUserManager<CognitoUser>>(userStoreMock.Object, null, null, null, null, null, null, null, null, contextAccessorMock.Object);
             claimsFactoryMock = new Mock<CognitoUserClaimsPrincipalFactory<CognitoUser>>(userManagerMock.Object, optionsAccessorMock.Object);
-            signinManager = new CognitoSignInManager<CognitoUser>(userManagerMock.Object, contextAccessorMock.Object, claimsFactoryMock.Object, optionsAccessorMock.Object, loggerSigninManagerMock.Object, schemesMock.Object);
+
+            cognitoTokenOptionsAccessorMock = new Mock<IOptions<AWSCognitoTokenOptions>>();
+            var cognitoTokenOptions = new AWSCognitoTokenOptions();
+            cognitoTokenOptions.AllowTokenRefresh = true;
+            cognitoTokenOptionsAccessorMock.Setup(o => o.Value).Returns(cognitoTokenOptions);
+
+            signinManager = new CognitoSignInManager<CognitoUser>(userManagerMock.Object, contextAccessorMock.Object, claimsFactoryMock.Object, optionsAccessorMock.Object, cognitoTokenOptionsAccessorMock.Object, loggerSigninManagerMock.Object, schemesMock.Object);
         }
 
         [Fact]
@@ -147,7 +156,7 @@ namespace Amazon.AspNetCore.Identity.Cognito.Tests
             var authFlowResponse = new AuthFlowResponse("sessionId", null, null, null, null);
 
             userManagerMock.Setup(mock => mock.FindByIdAsync(It.IsAny<string>())).Returns(Task.FromResult(cognitoUser)).Verifiable();
-            userManagerMock.Setup(mock => mock.RespondToTwoFactorChallengeAsync(It.IsAny<CognitoUser>(), It.IsAny<string>(), It.IsAny<string>()))
+            userManagerMock.Setup(mock => mock.RespondToTwoFactorChallengeAsync(It.IsAny<CognitoUser>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(Task.FromResult(authFlowResponse))
                 .Callback(() => cognitoUser.SessionTokens = new CognitoUserSession("idToken", "accessToken", "refreshToken", DateTime.Now, DateTime.Now.AddDays(1))).Verifiable();
             userManagerMock.Setup(mock => mock.GetClaimsAsync(It.IsAny<CognitoUser>())).Returns(Task.FromResult(new List<Claim>() as IList<Claim>)).Verifiable();
@@ -170,7 +179,7 @@ namespace Amazon.AspNetCore.Identity.Cognito.Tests
             AuthFlowResponse authFlowResponse = null;
 
             userManagerMock.Setup(mock => mock.FindByIdAsync(It.IsAny<string>())).Returns(Task.FromResult(cognitoUser)).Verifiable();
-            userManagerMock.Setup(mock => mock.RespondToTwoFactorChallengeAsync(It.IsAny<CognitoUser>(), It.IsAny<string>(), It.IsAny<string>()))
+            userManagerMock.Setup(mock => mock.RespondToTwoFactorChallengeAsync(It.IsAny<CognitoUser>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(Task.FromResult(authFlowResponse)).Verifiable();
 
             var output = await signinManager.RespondToTwoFactorChallengeAsync("2FACODE", true, false).ConfigureAwait(false);
