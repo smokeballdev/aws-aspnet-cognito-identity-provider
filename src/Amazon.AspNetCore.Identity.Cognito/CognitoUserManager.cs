@@ -27,6 +27,7 @@ using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.CognitoIdentityProvider;
+using Amazon.CognitoIdentityProvider.Model;
 
 namespace Amazon.AspNetCore.Identity.Cognito
 {
@@ -478,7 +479,7 @@ namespace Amazon.AspNetCore.Identity.Cognito
             return _userStore.GetUserAttributeVerificationCodeAsync(user, CognitoAttribute.Email.AttributeName, CancellationToken);
         }
 
-        public virtual Task ForgotPasswordAsync(TUser user)
+        public virtual Task<ForgotPasswordResponse> ForgotPasswordAsync(TUser user)
         {
             ThrowIfDisposed();
 
