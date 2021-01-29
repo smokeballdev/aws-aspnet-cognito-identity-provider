@@ -509,14 +509,20 @@ namespace Amazon.AspNetCore.Identity.Cognito
             }
         }
 
-        public virtual async Task ForgotPasswordAsync(TUser user)
+        public virtual async Task<ForgotPasswordResponse> ForgotPasswordAsync(TUser user)
         {
             if (user == null)
             {
                 throw new ArgumentNullException(nameof(user));
             }
 
-            await user.ForgotPasswordAsync().ConfigureAwait(false);
+            /* Amazon Cognito Authentication Extension Library doesn't currently support returning the ForgotPasswordResponse when calling ForgotPasswordAsync
+            // So we need to hook in to some methods via reflection
+            // https://github.com/aws/aws-sdk-net-extensions-cognito  */
+
+            var request = user.CreateForgotPasswordRequest();
+
+            return await _cognitoClient.ForgotPasswordAsync(request).ConfigureAwait(false);
         }
 
         /// <summary>
