@@ -24,6 +24,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Amazon.AspNetCore.Identity.Cognito.Extensions;
+using System.Net;
 
 namespace Amazon.AspNetCore.Identity.Cognito
 {
@@ -523,6 +524,33 @@ namespace Amazon.AspNetCore.Identity.Cognito
             var request = user.CreateForgotPasswordRequest();
 
             return await _cognitoClient.ForgotPasswordAsync(request).ConfigureAwait(false);
+        }
+
+        public virtual async Task<UpdateUserAttributesResponse> UpdateAttributesAsync(TUser user, IDictionary<string, string> attributes)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            /* Amazon Cognito Authentication Extension Library doesn't currently support returning the UpdateUserAttributesResponse when calling UpdateUserAttributesAsync
+            // So we need to hook in to some methods via reflection
+            // https://github.com/aws/aws-sdk-net-extensions-cognito  */
+
+            var request = user.CreateUpdateUserAttributesRequest(attributes);
+
+            var response = await _cognitoClient.UpdateUserAttributesAsync(request).ConfigureAwait(false);
+
+            if (response.HttpStatusCode == HttpStatusCode.OK)
+            {
+                // Update the local Attributes property
+                foreach (KeyValuePair<string, string> entry in attributes)
+                {
+                    user.Attributes[entry.Key] = entry.Value;
+                }
+            }
+
+            return response;
         }
 
         /// <summary>
