@@ -486,6 +486,13 @@ namespace Amazon.AspNetCore.Identity.Cognito
             return _userStore.ForgotPasswordAsync(user);
         }
 
+        public virtual Task<UpdateUserAttributesResponse> UpdateAttributesAsync(TUser user, IDictionary<string, string> attributes)
+        {
+            ThrowIfDisposed();
+
+            return _userStore.UpdateAttributesAsync(user, attributes);
+        }
+
         /// <summary>
         /// Generates and sends a phone confirmation token for the specified user.
         /// </summary>

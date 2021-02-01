@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Amazon.CognitoIdentityProvider;
 using Amazon.CognitoIdentityProvider.Model;
@@ -11,6 +12,7 @@ namespace Amazon.AspNetCore.Identity.Cognito.Extensions
         private static readonly MethodInfo _secretPropertyGetter;
         private static readonly MethodInfo _updateSessionMethod;
         private static readonly MethodInfo _createForgotPasswordRequestMethod;
+        private static readonly MethodInfo _createUpdateUserAttributesMethod;
 
         static CognitoUserExtensions()
         {
@@ -20,6 +22,7 @@ namespace Amazon.AspNetCore.Identity.Cognito.Extensions
             _secretPropertyGetter = secretProperty?.GetGetMethod(nonPublic: true);
             _updateSessionMethod = userType.GetMethod("UpdateSessionIfAuthenticationComplete", BindingFlags.NonPublic | BindingFlags.Instance);
             _createForgotPasswordRequestMethod = userType.GetMethod("CreateForgotPasswordRequest", BindingFlags.NonPublic | BindingFlags.Instance);
+            _createUpdateUserAttributesMethod = userType.GetMethod("CreateUpdateUserAttributesRequest", BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
         internal static string GetSecretHash(this CognitoUser user)
@@ -41,6 +44,11 @@ namespace Amazon.AspNetCore.Identity.Cognito.Extensions
         internal static ForgotPasswordRequest CreateForgotPasswordRequest(this CognitoUser user)
         {
             return _createForgotPasswordRequestMethod.Invoke(user, Array.Empty<object>()) as ForgotPasswordRequest;
+        }
+
+        internal static UpdateUserAttributesRequest CreateUpdateUserAttributesRequest(this CognitoUser user, IDictionary<string, string> attributes)
+        {
+            return _createUpdateUserAttributesMethod.Invoke(user, new object[] { attributes }) as UpdateUserAttributesRequest;
         }
     }
 }
